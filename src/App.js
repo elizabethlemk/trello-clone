@@ -1,23 +1,28 @@
 import React from 'react';
 import Column from './components/Column';
+import Ticket from './components/Ticket';
 import './App.css';
 
 export default class App extends React.Component {
   state = {
     list: [
       {
+        id: 0,
         name: "Homepage",
         status: "backlog"
       },
       {
+        id: 1,
         name: "PDP",
         status: "backlog"
       },
       {
+        id: 2,
         name: "Contact Us Page",
         status: "backlog"
       },
-    ]
+    ],
+    current_ticket: null
   }
 
   handleDragStart = (e, name) => {
@@ -43,14 +48,43 @@ export default class App extends React.Component {
 
   handleAdd = (status, text) => {
     let ticket = {
+        id: this.state.list[this.state.list.length - 1].id + 1,
         name: text,
         status: status
     }
 
       let list = [...this.state.list, ticket]
 
-    console.log(list)
       this.setState({ list: list })
+  }
+
+  handleEdit = (id, text) => {
+      if (text) {
+          let list = this.state.list.map(item => {
+              if (item.id === id) {
+                  item.name = text
+              }
+              return item
+          })
+
+          this.setState({ list: list })
+      }
+  }
+
+  handleDelete = (e, id) => {
+      e.preventDefault();
+
+      let list = this.state.list.filter(item => item.id !== id);
+      this.setState({ list: list })
+
+  }
+
+  handleCurrentTicket = (id) => {
+    this.setState({ current_ticket: id })
+  }
+
+  deselectCurrent = () => {
+      this.setState({ current_ticket: null })
   }
 
   render() {
@@ -81,11 +115,14 @@ export default class App extends React.Component {
           columns.forEach(item => {
               if (task.status === item.name){
                 item.tickets.push(
-                    <div draggable className="draggable"
-                        key={task.name}
-                        onDragStart={(e) => this.handleDragStart(e, task.name)}>
-                        {task.name}
-                    </div>
+                    <Ticket task={task} 
+                        key={task.id}
+                        current_ticket={this.state.current_ticket} 
+                        handleDragStart={this.handleDragStart}
+                        handleCurrentTicket={this.handleCurrentTicket}
+                        handleDelete={this.handleDelete}
+                        deselectCurrent={this.deselectCurrent}
+                        handleEdit={this.handleEdit} />
                 )
               }
           })

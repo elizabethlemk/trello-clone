@@ -43,6 +43,7 @@ const Column = props => {
             onDragOver={(e) => handleDragOver(e)}
             data-type={name}>
             <h2 className="column__header">{ title }</h2>
+            
             {tickets}
 
             <form className="column__form" style={ display ? {display: "block"} : {display: "none"}} onSubmit={handleSubmit}>
