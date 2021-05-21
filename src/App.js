@@ -54,45 +54,51 @@ export default class App extends React.Component {
   }
 
   render() {
-      let obj = {
-          backlog: [],
-          pending: [],
-          qa: [],
-          completed: []
-      }
+      let columns = [
+          {
+              title: "To Do",
+              name: "backlog",
+              tickets: []
+          },
+          {
+              title: "In Progress",
+              name: "pending",
+              tickets: []
+          },
+          {
+              title: "QA",
+              name: "qa",
+              tickets: []
+          },
+          {
+              title: "Done",
+              name: "completed",
+              tickets: []
+          }
+      ]
 
       this.state.list.forEach(task => {
-          obj[task.status].push( 
-            <div draggable className="draggable"
-                key={task.name}
-                onDragStart={(e) => this.handleDragStart(e, task.name)}>
-                { task.name }
-            </div>
-          )
+          columns.forEach(item => {
+              if (task.status === item.name){
+                item.tickets.push(
+                    <div draggable className="draggable"
+                        key={task.name}
+                        onDragStart={(e) => this.handleDragStart(e, task.name)}>
+                        {task.name}
+                    </div>
+                )
+              }
+          })
       })
 
       return(
           <div className="container">
-              <Column title="To Do" name="backlog" tickets={obj.backlog} 
-                handleAdd={this.handleAdd}
-                handleDrop={this.handleDrop}
-                handleDragOver={this.handleDragOver} />
-
-              <Column title="In Progress" name="pending" tickets={obj.pending} 
-                handleAdd={this.handleAdd}
-                handleDrop={this.handleDrop}
-                handleDragOver={this.handleDragOver} />
-
-
-              <Column title="QA" name="qa" tickets={obj.qa} 
-                handleAdd={this.handleAdd}
-                handleDrop={this.handleDrop}
-                handleDragOver={this.handleDragOver} />
-
-              <Column title="Done" name="completed" tickets={obj.completed} 
-                handleAdd={this.handleAdd}
-                handleDrop={this.handleDrop}
-                handleDragOver={this.handleDragOver} />
+              {
+                  columns.map((item, index) => <Column title={item.title} name={item.name} tickets={item.tickets} key={index}
+                      handleAdd={this.handleAdd}
+                      handleDrop={this.handleDrop}
+                      handleDragOver={this.handleDragOver} />)
+              }
           </div>
       )
   }
