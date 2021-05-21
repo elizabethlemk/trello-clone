@@ -47,8 +47,16 @@ export default class App extends React.Component {
   }
 
   handleAdd = (status, text) => {
+    let id;
+      if (this.state.list.length){
+        id = this.state.list[this.state.list.length - 1].id + 1
+
+      } else {
+          id = 0
+      }
+
     let ticket = {
-        id: this.state.list[this.state.list.length - 1].id + 1,
+        id: id,
         name: text,
         status: status
     }
