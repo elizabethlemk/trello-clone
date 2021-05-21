@@ -63,7 +63,7 @@ export default class App extends React.Component {
 
       let list = [...this.state.list, ticket]
 
-      this.setState({ list: list })
+      this.setState({ list: list, current_ticket: null })
   }
 
   handleEdit = (id, text) => {
