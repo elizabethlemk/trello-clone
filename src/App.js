@@ -10,11 +10,7 @@ const App = () => {
             title: "To Do",
             name: "backlog",
             tickets: [
-                {
-                    id: 0,
-                    name: "Homepage",
-                    status: "backlog"
-                },
+            
                 {
                     id: 1,
                     name: "PDP",
@@ -30,7 +26,11 @@ const App = () => {
         {
             title: "In Progress",
             name: "pending",
-            tickets: []
+            tickets: [{
+                id: 0,
+                name: "Homepage",
+                status: "pending"
+            },]
         },
         {
             title: "QA",
@@ -49,6 +49,8 @@ const App = () => {
     const dragOverItem = useRef();
 
     // Functions
+
+    // Currently the drag and drop doesnt work on mobile. When these functions are finished, it should support it.
     const handleDragStart = (e, name, index) => {
         draggingItem.current = index
         e.dataTransfer.setData("id", name)
@@ -66,10 +68,11 @@ const App = () => {
         e.preventDefault();
     }
 
+    // the CRUD functions need to filter out the selected ticket, change the status of the ticket, and reinsert into the proper column object
     const handleDrop = (e, status) => {
         let id = e.dataTransfer.getData("id")
         let idx;
-        let ticket;
+        let current_ticket;
         let columns_copy = columns
 
         let select_column = columns.find((item, index) => {
@@ -80,7 +83,7 @@ const App = () => {
         })
         columns.forEach(item => item.tickets.find(ticket => { 
             if (ticket.name === id) {
-                debugger
+                return ticket
             }
         }))
         
