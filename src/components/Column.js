@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-
+import Ticket from './Ticket';
 
 
 const Column = props => {
@@ -8,7 +8,7 @@ const Column = props => {
     const [error, setError] = useState(false);
     const [text, setText] = useState("");
 
-    let {name, handleAdd, handleDrop, handleDragOver, title, tickets} = props;
+    let { current_ticket, deselectCurrent, handleAdd, handleCurrentTicket, handleDragStart, handleDelete, handleDrop, handleDragOver, handleEdit, name, status, title, tickets } = props;
     
     const handleTextArea = event => {
         let value = event.target.value
@@ -30,7 +30,7 @@ const Column = props => {
     const handleSubmit = event => {
         event.preventDefault();
         if (text.length > 0) {
-            handleAdd(name, text);
+            handleAdd(name, text, status);
             handleCancel(event);
         } else {
             setError(true)
@@ -43,8 +43,17 @@ const Column = props => {
             onDragOver={(e) => handleDragOver(e)}
             data-type={name}>
             <h2 className="column__header">{ title }</h2>
-            
-            {tickets}
+
+            {tickets.map((ticket, index) => <Ticket task={ticket}
+                key={ticket.id}
+                status={name}
+                index={index}
+                current_ticket={current_ticket}
+                handleDragStart={handleDragStart}
+                handleCurrentTicket={handleCurrentTicket}
+                handleDelete={handleDelete}
+                deselectCurrent={deselectCurrent}
+                handleEdit={handleEdit} />)}
 
             <form className="column__form" style={ display ? {display: "block"} : {display: "none"}} onSubmit={handleSubmit}>
                 <textarea onChange={handleTextArea} value={text} placeholder="Enter a title for this card..."></textarea>

@@ -1,152 +1,217 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import Column from './components/Column';
-import Ticket from './components/Ticket';
+
 import './App.css';
 
-export default class App extends React.Component {
-  state = {
-    list: [
-      {
-        id: 0,
-        name: "Homepage",
-        status: "backlog"
-      },
-      {
-        id: 1,
-        name: "PDP",
-        status: "backlog"
-      },
-      {
-        id: 2,
-        name: "Contact Us Page",
-        status: "backlog"
-      },
-    ],
-    current_ticket: null
-  }
-
-  handleDragStart = (e, name) => {
-      e.dataTransfer.setData("id", name)
-  }
-
-  handleDragOver = e => {
-      e.preventDefault();
-  }
-
-  handleDrop = (e, status) => {
-    let id = e.dataTransfer.getData("id")
-
-    let list = this.state.list.filter( task => {
-        if (task.name === id){
-            task.status = status;
+const App = () => {
+    // State 
+    const [columns, setColumns] = useState([
+        {
+            title: "To Do",
+            name: "backlog",
+            tickets: [
+            
+                {
+                    id: 1,
+                    name: "PDP",
+                    status: "backlog"
+                },
+                {
+                    id: 2,
+                    name: "Contact Us Page",
+                    status: "backlog"
+                }
+            ]
+        },
+        {
+            title: "In Progress",
+            name: "pending",
+            tickets: [{
+                id: 0,
+                name: "Homepage",
+                status: "pending"
+            },]
+        },
+        {
+            title: "QA",
+            name: "qa",
+            tickets: []
+        },
+        {
+            title: "Done",
+            name: "completed",
+            tickets: []
         }
-        return task
-    })
+    ])
 
-    this.setState({ list: list })
-  }
+    const [current_ticket, setCurrentTicket] = useState(null)
+    const draggingItem = useRef();
+    const dragOverItem = useRef();
 
-  handleAdd = (status, text) => {
-    let id;
-      if (this.state.list.length){
-        id = this.state.list[this.state.list.length - 1].id + 1
+    // Functions
 
-      } else {
-          id = 0
-      }
-
-    let ticket = {
-        id: id,
-        name: text,
-        status: status
+    // Currently the drag and drop doesnt work on mobile. When these functions are finished, it should support it.
+    const handleDragStart = (e, name, index) => {
+        draggingItem.current = index
+        e.dataTransfer.setData("id", name)
     }
 
-      let list = [...this.state.list, ticket]
+    const handleDragEnter = (e, name, index) => {
+        draggingItem.current = index
+    }
 
-      this.setState({ list: list, current_ticket: null })
-  }
+    const handleDragEnd = (e, status) => {
+        // const list_copy = list.filter(item => item.status === status)
+    }
 
-  handleEdit = (id, text) => {
-      if (text) {
-          let list = this.state.list.map(item => {
-              if (item.id === id) {
-                  item.name = text
-              }
-              return item
-          })
+    const handleDragOver = e => {
+        e.preventDefault();
+    }
 
-          this.setState({ list: list })
-      }
-  }
+    // the CRUD functions need to filter out the selected ticket, change the status of the ticket, and reinsert into the proper column object
+    const handleDrop = (e, status) => {
+        let id = e.dataTransfer.getData("id")
+        let idx;
+        let current_ticket;
+        let columns_copy = columns
 
-  handleDelete = (e, id) => {
-      e.preventDefault();
+        let select_column = columns.find((item, index) => {
+            if (item.name === status) {
+                idx = index
+                return item
+            }
+        })
+        columns.forEach(item => item.tickets.find(ticket => { 
+            if (ticket.name === id) {
+                return ticket
+            }
+        }))
+        
+        ticket.status = status
 
-      let list = this.state.list.filter(item => item.id !== id);
-      this.setState({ list: list })
+        let new_list = columns.tickets.find(task => {
+            if (task.name === id) {
+                task.status = status;
+            }
+            return task
+        })
 
-  }
+        select_column.tickets = new_list
+        columns_copy[idx] = select_column
 
-  handleCurrentTicket = (id) => {
-    this.setState({ current_ticket: id })
-  }
+        setColumns(columns_copy)
+    }
 
-  deselectCurrent = () => {
-      this.setState({ current_ticket: null })
-  }
+    const handleAdd = (status, text) => {
+        let id;
+        let last_id = 0
 
-  render() {
-      let columns = [
-          {
-              title: "To Do",
-              name: "backlog",
-              tickets: []
-          },
-          {
-              title: "In Progress",
-              name: "pending",
-              tickets: []
-          },
-          {
-              title: "QA",
-              name: "qa",
-              tickets: []
-          },
-          {
-              title: "Done",
-              name: "completed",
-              tickets: []
-          }
-      ]
+        columns.forEach(item => last_id + item.tickets.length)
 
-      this.state.list.forEach(task => {
-          columns.forEach(item => {
-              if (task.status === item.name){
-                item.tickets.push(
-                    <Ticket task={task} 
-                        key={task.id}
-                        current_ticket={this.state.current_ticket} 
-                        handleDragStart={this.handleDragStart}
-                        handleCurrentTicket={this.handleCurrentTicket}
-                        handleDelete={this.handleDelete}
-                        deselectCurrent={this.deselectCurrent}
-                        handleEdit={this.handleEdit} />
-                )
-              }
-          })
-      })
+        if (last_id > 0) {
+            id = last_id
 
-      return(
-          <div className="container">
-              {
-                  columns.map((item, index) => <Column title={item.title} name={item.name} tickets={item.tickets} key={index}
-                      handleAdd={this.handleAdd}
-                      handleDrop={this.handleDrop}
-                      handleDragOver={this.handleDragOver} />)
-              }
-          </div>
-      )
-  }
+        } else {
+            id = 0
+        }
+
+        let ticket = {
+            id: id,
+            name: text,
+            status: status
+        }
+        let idx;
+        let columns_copy = columns
+        let select_column = columns.find((item, index) => {
+            if (item.status === status) {
+                idx = index
+                return item
+            }
+        })
+
+        let new_list = select_column.tickets.map(item => {
+            if (item.id === id) {
+                item.name = text
+            }
+            return item
+        })
+        select_column.tickets.push(ticket)
+        columns_copy[idx] = select_column
+
+        setColumns(columns_copy)
+        setCurrentTicket(null)
+    }
+
+    const handleEdit = (id, text, status) => {
+        if (text) {
+            let idx;
+            let columns_copy = columns
+            let select_column = columns.find((item, index) => {
+                if (item.status === status) {
+                    idx = index
+                    return item
+                }
+            })
+
+            let new_list = select_column.tickets.map(item => {
+                if (item.id === id) {
+                    item.name = text
+                }
+                return item
+            })
+            select_column.tickets = new_list
+            columns_copy[idx] = select_column
+
+            setColumns(columns_copy)
+
+        }
+    }
+
+    const handleDelete = (e, id, status) => {
+        e.preventDefault();
+        let idx;
+
+        let columns_copy = columns
+        let select_column = columns.find((item, index) => {
+            if (item.status === status){
+                idx = index
+                return item
+            }
+        })
+        let new_list = select_column.tickets.filter(item => item.id !== id);
+            select_column.tickets = new_list
+            columns_copy[idx] = select_column
+
+        setColumns(columns_copy)
+
+    }
+
+    const handleCurrentTicket = (id) => {
+        setCurrentTicket(id)
+    }
+
+    const deselectCurrent = () => {
+        setCurrentTicket(null)
+    }
+
+    return (
+
+        <div className="container">
+            {
+                columns.map((item, index) => <Column title={item.title} name={item.name} tickets={item.tickets} key={index}
+                    current_ticket={current_ticket}
+                    handleDragStart={handleDragStart}
+                    handleCurrentTicket={handleCurrentTicket}
+                    handleDelete={handleDelete}
+                    deselectCurrent={deselectCurrent}
+                    handleEdit={handleEdit}
+                    handleAdd={handleAdd}
+                    handleDrop={handleDrop}
+                    handleDragOver={handleDragOver} />)
+            }
+        </div>
+    )
 
 }
 
+export default App
